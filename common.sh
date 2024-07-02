@@ -1,8 +1,9 @@
 #!/bin/bash
-# https://github.com/shidahuilang/build-actions
+# https://github.com/shidahuilang/openwrt
+# common Module by shidahuilang
 # matrix.target=${FOLDER_NAME}
 
-ACTIONS_VERSION="1.0.7"
+ACTIONS_VERSION="1.0.3"
 
 function TIME() {
 Compte=$(date +%Y年%m月%d号%H时%M分)
@@ -25,7 +26,7 @@ Compte=$(date +%Y年%m月%d号%H时%M分)
 
 function settings_variable() {
 cd ${GITHUB_WORKSPACE}
-bash <(curl -fsSL https://raw.githubusercontent.com/makebl/common/main/custom/first.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/shidahuilang/common/main/custom/first.sh)
 }
 
 function Diy_variable() {
@@ -69,6 +70,8 @@ fi
 
 if [[ -n "$(echo "${CPU_SELECTION}" |grep -i 'E5\|默认\|false')" ]]; then
   CPU_SELECTION="false"
+elif [[ -n "$(echo "${CPU_SELECTION}" |grep '7763')" ]]; then
+  CPU_SELECTION="7763" 
 elif [[ -n "$(echo "${CPU_SELECTION}" |grep '8370')" ]]; then
   CPU_SELECTION="8370"
 elif [[ -n "$(echo "${CPU_SELECTION}" |grep '8272')" ]]; then
@@ -85,6 +88,8 @@ elif [[ -n "$(echo "${INFORMATION_NOTICE}" |grep -i 'TG\|telegram')" ]]; then
   INFORMATION_NOTICE="TG"
 elif [[ -n "$(echo "${INFORMATION_NOTICE}" |grep -i 'PUSH\|pushplus')" ]]; then
   INFORMATION_NOTICE="PUSH"
+elif [[ -n "$(echo "${INFORMATION_NOTICE}" |grep -i 'WX\|WeChat')" ]]; then
+  INFORMATION_NOTICE="WX"
 else
   INFORMATION_NOTICE="false"
 fi
@@ -114,11 +119,25 @@ chmod -R +x ${start_path} && source ${start_path}
 
 case "${SOURCE_CODE}" in
 COOLSNOWWOLF)
-  export REPO_URL="https://github.com/coolsnowwolf/lede"
   export SOURCE="Lede"
   export SOURCE_OWNER="Lean's"
-  export LUCI_EDITION="18.06"
-  export DIY_WORK="${FOLDER_NAME}master"
+  if [[ "${REPO_BRANCH}" == "master" ]]; then
+    export REPO_URL="https://github.com/coolsnowwolf/lede"
+    export LUCI_EDITION="18.06"
+    export DIY_WORK="${FOLDER_NAME}master"
+    echo "GL_BRANCH=lede" >> ${GITHUB_ENV}
+  elif [[ "${REPO_BRANCH}" == "gl-ax1800" ]]; then
+    export REPO_URL="https://github.com/coolsnowwolf/openwrt-gl-ax1800"
+    export LUCI_EDITION="gl-ax1800"
+    export REPO_BRANCH="master"
+    export DIY_WORK="${FOLDER_NAME}ax1800"
+    echo "GL_BRANCH=lede_ax1800" >> ${GITHUB_ENV}
+  else
+    export REPO_URL="https://github.com/coolsnowwolf/lede"
+    export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
+    export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
+    echo "GL_BRANCH=lede" >> ${GITHUB_ENV}
+  fi
 ;;
 LIENOL)
   export REPO_URL="https://github.com/Lienol/openwrt"
@@ -128,20 +147,11 @@ LIENOL)
   export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
 ;;
 IMMORTALWRT)
-  if [[ "${REPO_BRANCH}" == "mt798x" ]]; then
-    export REPO_URL="https://github.com/hanwckf/immortalwrt-mt798x"
-    export SOURCE="Immortalwrt"
-    export SOURCE_OWNER="hanwckf's"
-    export LUCI_EDITION="mt798x"
-    export DIY_WORK="hanwckf2102"
-    export REPO_BRANCH="openwrt-21.02"
-  else
-    export REPO_URL="https://github.com/immortalwrt/immortalwrt"
-    export SOURCE="Immortalwrt"
-    export SOURCE_OWNER="ctcgfw's"
-    export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
-    export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
-  fi
+  export REPO_URL="https://github.com/immortalwrt/immortalwrt"
+  export SOURCE="Immortalwrt"
+  export SOURCE_OWNER="ctcgfw's"
+  export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
+  export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
 ;;
 XWRT)
   export REPO_URL="https://github.com/x-wrt/x-wrt"
@@ -184,7 +194,6 @@ echo "SOURCE=${SOURCE}" >> ${GITHUB_ENV}
 echo "LUCI_EDITION=${LUCI_EDITION}" >> ${GITHUB_ENV}
 echo "SOURCE_OWNER=${SOURCE_OWNER}" >> ${GITHUB_ENV}
 echo "DIY_WORK=${DIY_WORK}" >> ${GITHUB_ENV}
-echo "svn=${GITHUB_WORKSPACE}/openwrt/build/common/custom/replace_file.sh" >> ${GITHUB_ENV}
 echo "BUILD_PATH=${GITHUB_WORKSPACE}/openwrt/build/${FOLDER_NAME}" >> ${GITHUB_ENV}
 echo "FILES_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files" >> ${GITHUB_ENV}
 echo "REPAIR_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/etc/openwrt_release" >> ${GITHUB_ENV}
@@ -193,6 +202,8 @@ echo "DEFAULT_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/etc/defa
 echo "KEEPD_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/lib/upgrade/keep.d/base-files-essential" >> ${GITHUB_ENV}
 echo "GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/bin/config_generate" >> ${GITHUB_ENV}
 echo "CLEAR_PATH=${GITHUB_WORKSPACE}/openwrt/Clear" >> ${GITHUB_ENV}
+HOUR=$(( $SECONDS/3600 )) && MIN=$(( ($SECONDS-${HOUR}*3600)/60 )) && SEC=$(( $SECONDS-${HOUR}*3600-${MIN}*60 ))
+echo "BUILD_TIME=${HOUR}时${MIN}分${SEC}秒" >> $GITHUB_ENV
 echo "Upgrade_Date=`date -d "$(date +'%Y-%m-%d %H:%M:%S')" +%s`" >> ${GITHUB_ENV}
 echo "Firmware_Date=$(date +%Y-%m%d-%H%M)" >> ${GITHUB_ENV}
 echo "Compte_Date=$(date +%Y年%m月%d号%H时%M分)" >> ${GITHUB_ENV}
@@ -240,7 +251,7 @@ fi
 
 
 function Diy_update() {
-bash <(curl -fsSL https://raw.githubusercontent.com/makebl/common/main/custom/ubuntu.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/shidahuilang/common/main/custom/ubuntu.sh)
 if [[ $? -ne 0 ]];then
   TIME r "依赖安装失败，请检测网络后再次尝试!"
   exit 1
@@ -253,52 +264,9 @@ if [[ `gcc --version |grep -c "buntu 13"` -eq '0' ]]; then
   sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
   sudo apt-get install -y gcc-13
   sudo apt-get install -y g++-13
+  sudo apt-get install -y rename
   sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 --slave /usr/bin/g++ g++ /usr/bin/g++-13
   gcc --version
-fi
-}
-
-
-function svn_co() {
-if [[ $# -lt 2 ]]; then
-  echo "格式错误,正确格式为: [svn_co] [文件夹或文件链接] [需要替换的文件夹或文件的对应路径],分别以空格分隔"
-  return 1
-fi
-A="$1" B="$2" && shift 2
-cd "${HOME_PATH}" && r="$PWD/"
-rootdir="$(echo "${B}"|sed "s?${r}??g"|sed 's/^.\///')"
-localdir="${HOME_PATH}/${rootdir}"
-fssl="$(echo "${A}" |cut -d"/" -f4-5)"
-curl="$(echo "${A}" |cut -d"/" -f1-5)"
-crutch="$(echo "${A}" |cut -d"/" -f6)"
-branch="$(echo "${A}" |cut -d"/" -f7)"
-test="$(echo "${A}" |cut -d"/" -f8-)"
-link="https://raw.githubusercontent.com/${fssl}/${branch}/${test}"
-if [[ "${crutch}" == "blob" ]]; then
-  curl -L "${link}" -o "${localdir}"
-  if [[ $? -ne 0 ]]; then
-    echo "${rootdir}文件下载失败,请检查网络,或查看链接正确性"
-    return 1
-  else
-    echo "${rootdir}文件替换成功"
-  fi
-elif [[ "${crutch}" == "tree" ]]; then
-  tmpdir="$(mktemp -d)" || exit 1
-  trap 'rm -rf "${tmpdir}"' EXIT
-  git clone -b "${branch}" --depth 1 --filter=blob:none --sparse "${curl}" "${tmpdir}"
-  cd "${tmpdir}"
-  git sparse-checkout init --cone
-  git sparse-checkout set "${test}"
-  if [[ $? -ne 0 ]]; then
-    echo "${rootdir}文件夹下载失败,请检查网络,或查看链接正确性"
-    return 1
-  else
-    echo "${rootdir}文件夹替换成功"
-  fi
-  sudo rm -rf "${localdir}" && cp -Rf "${test}" "${localdir}"
-  cd "${HOME_PATH}" && sudo rm -rf "${tmpdir}"
-else
-  echo "${rootdir}替换文件操作失败,请保证链接正确性"
 fi
 }
 
@@ -310,24 +278,29 @@ cd ${HOME_PATH}
 [[ ! -d "${HOME_PATH}/LICENSES/doc" ]] && mkdir -p "${HOME_PATH}/LICENSES/doc"
 [[ ! -d "${HOME_PATH}/build_logo" ]] && mkdir -p "${HOME_PATH}/build_logo"
 
+LUCI_CHECKUT="$(git tag -l |grep '^V\|^v' |awk 'END {print}')"
+if [[ -n "${LUCI_CHECKUT}" ]]; then
+  git checkout ${LUCI_CHECKUT}
+  git switch -c ${LUCI_CHECKUT}
+fi
 git pull
 
-sed -i '/shidahuilang/d; /helloworld/d; /passwall/d; /OpenClash/d' "feeds.conf.default"
+sed -i '/langge/d; /helloworld/d; /passwall/d; /OpenClash/d' "feeds.conf.default"
 cat feeds.conf.default|awk '!/^#/'|awk '!/^$/'|awk '!a[$1" "$2]++{print}' >uniq.conf
 mv -f uniq.conf feeds.conf.default
 
 # 这里增加了源,要对应的删除/etc/opkg/distfeeds.conf插件源
 cat >>"feeds.conf.default" <<-EOF
-src-git danshui1 https://github.com/shidahuilang/openwrt-package.git;${SOURCE}
+src-git langge1 https://github.com/shidahuilang/openwrt-package.git;${SOURCE}
 src-git helloworld https://github.com/fw876/helloworld.git
 src-git passwall3 https://github.com/xiaorouji/openwrt-passwall-packages;main
 EOF
 ./scripts/feeds update -a
 
 if [[ -f "${HOME_PATH}/feeds/luci/modules/luci-mod-system/root/usr/share/luci/menu.d/luci-mod-system.json" ]]; then
-  echo "src-git danshui2 https://github.com/shidahuilang/openwrt-package.git;Theme2" >> "feeds.conf.default"
+  echo "src-git langge2 https://github.com/shidahuilang/openwrt-package.git;Theme2" >> "feeds.conf.default"
 else
-  echo "src-git danshui2 https://github.com/shidahuilang/openwrt-package.git;Theme1" >> "feeds.conf.default"
+  echo "src-git langge2 https://github.com/shidahuilang/openwrt-package.git;Theme1" >> "feeds.conf.default"
 fi
 z="*luci-theme-argon*,*luci-app-argon-config*,*luci-theme-Butterfly*,*luci-theme-netgear*,*luci-theme-atmaterial*, \
 luci-theme-rosy,luci-theme-darkmatter,luci-theme-infinityfreedom,luci-theme-design,luci-app-design-config, \
@@ -337,7 +310,7 @@ luci-app-gost,gost,luci-app-smartdns,smartdns,luci-app-wizard,luci-app-msd_lite,
 luci-app-ssr-plus,*luci-app-passwall*,luci-app-vssr,lua-maxminddb,v2dat,v2ray-geodata"
 t=(${z//,/ })
 for x in ${t[@]}; do \
-  find . -type d -name "${x}" |grep -v 'danshui\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+  find . -type d -name "${x}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
 done
 
 case "${SOURCE_CODE}" in
@@ -345,7 +318,7 @@ COOLSNOWWOLF)
   s="mentohust"
   c=(${s//,/ })
   for i in ${c[@]}; do \
-    find . -type d -name "${i}" |grep -v 'danshui\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+    find . -type d -name "${i}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
   done
   if [[ -d "${HOME_PATH}/build/common/Share/btrfs-progs" ]]; then
     rm -rf ${HOME_PATH}/feeds/packages/utils/btrfs-progs
@@ -356,7 +329,7 @@ LIENOL)
   s="mentohust,aliyundrive-webdav,pdnsd-alt,mt"
   c=(${s//,/ })
   for i in ${c[@]}; do \
-    find . -type d -name "${i}" |grep -v 'danshui\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+    find . -type d -name "${i}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
   done
   if [[ "${REPO_BRANCH}" == "19.07" ]]; then
     s="luci-app-unblockneteasemusic,luci-app-vssr,lua-maxminddb"
@@ -397,14 +370,14 @@ IMMORTALWRT)
   s="luci-app-cifs,luci-app-aliyundrive-webdav,aliyundrive-webdav,aliyundrive-fuse"
   c=(${s//,/ })
   for i in ${c[@]}; do \
-    find . -type d -name "${i}" |grep -v 'danshui\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+    find . -type d -name "${i}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
   done
 ;;
 OFFICIAL)
   s="luci-app-wrtbwmon,wrtbwmon,luci-app-dockerman,docker,dockerd,bcm27xx-userland,luci-app-aliyundrive-webdav,aliyundrive-webdav,aliyundrive-fuse"
   c=(${s//,/ })
   for i in ${c[@]}; do \
-    find . -type d -name "${i}" |grep -v 'danshui\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+    find . -type d -name "${i}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
   done
   if [[ "${REPO_BRANCH}" == "openwrt-19.07" ]]; then
     s="luci-app-vssr,lua-maxminddb,luci-app-natter,natter,luci-app-unblockneteasemusic"
@@ -473,25 +446,31 @@ XWRT)
   s="luci-app-wrtbwmon,wrtbwmon,luci-app-dockerman,docker,dockerd,bcm27xx-userland,luci-app-aliyundrive-webdav,aliyundrive-webdav,aliyundrive-fuse"
   c=(${s//,/ })
   for i in ${c[@]}; do \
-    find . -type d -name "${i}" |grep -v 'danshui\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+    find . -type d -name "${i}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
   done
 ;;
 esac
 
 for X in $(ls -1 "${HOME_PATH}/feeds/passwall3"); do
-  find . -type d -name "${X}" |grep -v 'danshui\|passwall3' |xargs -i rm -rf {}
+  find . -type d -name "${X}" |grep -v 'langge\|passwall3' |xargs -i rm -rf {}
 done
+# 删除软件包自带插件
+rm -rf feeds/packages/net/softethervpn5
+rm -rf feeds/packages/net/cloudflared
+rm -rf feeds/package/luci-app-smartdns
+rm -rf feeds/package/luci-app-zerotier
+
 # 更换golang版本
 rm -rf ${HOME_PATH}/feeds/packages/lang/golang
 git clone https://github.com/sbwml/packages_lang_golang -b 22.x ${HOME_PATH}/feeds/packages/lang/golang
 
-if [[ -d "${HOME_PATH}/feeds/danshui1/relevance/shadowsocks-libev" ]]; then
+if [[ -d "${HOME_PATH}/feeds/langge1/relevance/shadowsocks-libev" ]]; then
   rm -rf ${HOME_PATH}/feeds/packages/net/shadowsocks-libev
-  mv -f feeds/danshui1/relevance/shadowsocks-libev ${HOME_PATH}/feeds/packages/net/shadowsocks-libev
+  mv -f feeds/langge1/relevance/shadowsocks-libev ${HOME_PATH}/feeds/packages/net/shadowsocks-libev
 fi
-if [[ -d "${HOME_PATH}/feeds/danshui1/relevance/kcptun" ]]; then
+if [[ -d "${HOME_PATH}/feeds/langge1/relevance/kcptun" ]]; then
   rm -rf ${HOME_PATH}/feeds/packages/net/kcptun
-  mv -f ${HOME_PATH}/feeds/danshui1/relevance/kcptun ${HOME_PATH}/feeds/packages/net/kcptun
+  mv -f ${HOME_PATH}/feeds/langge1/relevance/kcptun ${HOME_PATH}/feeds/packages/net/kcptun
 fi
 
 if [[ ! -d "${HOME_PATH}/feeds/packages/lang/rust" ]]; then
@@ -499,7 +478,7 @@ if [[ ! -d "${HOME_PATH}/feeds/packages/lang/rust" ]]; then
 fi
 
 [[ ! -d "${HOME_PATH}/feeds/packages/devel/packr" ]] && cp -Rf ${HOME_PATH}/build/common/Share/packr ${HOME_PATH}/feeds/packages/devel/packr
-./scripts/feeds update danshui2
+./scripts/feeds update langge2
 
 cp -Rf ${HOME_PATH}/feeds.conf.default ${HOME_PATH}/LICENSES/doc/uniq.conf
 }
@@ -674,24 +653,22 @@ TIME r ""
 TIME y "第一次用我仓库的，请不要拉取任何插件，先SSH进入固件配置那里看过我脚本实在是没有你要的插件才再拉取"
 TIME y "拉取插件应该单独拉取某一个你需要的插件，别一下子就拉取别人一个插件包，这样容易增加编译失败概率"
 if [[ "${UPDATE_FIRMWARE_ONLINE}" == "true" ]]; then
-  TIME r "SSH连接固件输入命令'openwrt'可进行修改后台IP、清空密码、还原出厂设置和在线更新固件操作"
-else
-  TIME r "SSH连接固件输入命令'openwrt'可进行修改后台IP，清空密码和还原出厂设置操作"
+  TIME r "SSH连接固件输入命令'openwrt'可进行修改后台IP、清空密码、还原出厂设置和在线更新固件操作" 
+  TIME r "SSH连接固件输入命令'tools'可固件工具箱"
+  TIME r "SSH连接固件输入命令'qinglong'可一键安装青龙和Maiark"
 fi
 TIME r ""
-TIME g "CPU性能：8370C > 8272CL > 8171M > E5系列"
+TIME g "CPU性能：7763 > 8370C > 8272CL > 8171M > E5系列"
 TIME r ""
 }
 
 
 function Diy_COOLSNOWWOLF() {
 cd ${HOME_PATH}
-# 升级node版本
-rm -rf ${HOME_PATH}/feeds/packages/lang/node
-git clone https://github.com/sbwml/feeds_packages_lang_node-prebuilt -b packages-23.05 ${HOME_PATH}/feeds/packages/lang/node
 # 降低aliyundrive-webdav版本,新版本编译不成功
 if [[ -f "${HOME_PATH}/feeds/packages/multimedia/aliyundrive-webdav/Makefile" ]]; then
-  curl -fsSL https://raw.githubusercontent.com/coolsnowwolf/packages/aea60b5432fad984c0a4013bad0f0c5e00dcd115/multimedia/aliyundrive-webdav/Makefile  -o ${HOME_PATH}/feeds/packages/multimedia/aliyundrive-webdav/Makefile 
+  curl -o ./feeds/packages/multimedia/aliyundrive-webdav/Makefile https://raw.githubusercontent.com/coolsnowwolf/packages/aea60b5432fad984c0a4013bad0f0c5e00dcd115/multimedia/aliyundrive-webdav/Makefile
+
 fi
 }
 
@@ -758,11 +735,11 @@ if [[ "${REPO_BRANCH}" =~ (openwrt-19.07|openwrt-21.02) ]]; then
 fi
 if [[ "${REPO_BRANCH}" =~ (openwrt-19.07|openwrt-21.02|openwrt-22.03) ]]; then
   if [[ -d "${HOME_PATH}/feeds/passwall3/shadowsocksr-libev" ]]; then
-    curl -o ${HOME_PATH}/feeds/passwall3/shadowsocksr-libev/Makefile https://raw.githubusercontent.com/shidahuilang/common/main/Share/shadowsocksr-libev/Makefile
+    curl -o ${HOME_PATH}/feeds/passwall3/shadowsocksr-libev/Makefile https://raw.githubusercontent.com/281677160/common/main/Share/shadowsocksr-libev/Makefile
   fi
   # 降低shadowsocks-rust版本,最新版本编译不成功
   if [[ -d "${HOME_PATH}/feeds/passwall3/shadowsocks-rust" ]]; then
-    curl -o ${HOME_PATH}/feeds/passwall3/shadowsocks-rust/Makefile https://raw.githubusercontent.com/shidahuilang/common/main/Share/shadowsocks-rust/Makefile
+    curl -o ${HOME_PATH}/feeds/passwall3/shadowsocks-rust/Makefile https://raw.githubusercontent.com/281677160/common/main/Share/shadowsocks-rust/Makefile
   fi
 fi
 }
@@ -791,17 +768,17 @@ if [[ "${OpenClash_branch}" == "1" ]]; then
   echo "src-git OpenClash https://github.com/vernesong/OpenClash.git;dev" >> "feeds.conf.default"
   echo "OpenClash_branch=dev" >> ${GITHUB_ENV}
 else
-  echo "src-git OpenClash https://github.com/vernesong/OpenClash.git;master" >> "feeds.conf.default"
+  echo "src-git OpenClash https://github.com/shidahuilang/luci-app-openclash.git;master" >> "feeds.conf.default"
   echo "OpenClash_branch=master" >> ${GITHUB_ENV}
 fi
 
 cat feeds.conf.default|awk '!/^#/'|awk '!/^$/'|awk '!a[$1" "$2]++{print}' >uniq.conf
 mv -f uniq.conf feeds.conf.default
-sed -i 's@.*danshui*@#&@g' "feeds.conf.default"
+sed -i 's@.*dalang*@#&@g' "feeds.conf.default"
 sed -i 's@.*src-git lienol*@#&@g' "feeds.conf.default"
 sed -i 's@.*src-git other*@#&@g' "feeds.conf.default"
 ./scripts/feeds update -a
-sed -i 's/^#\(.*danshui\)/\1/' "feeds.conf.default"
+sed -i 's/^#\(.*dalang\)/\1/' "feeds.conf.default"
 sed -i 's/^#\(.*src-git lienol\)/\1/' "feeds.conf.default"
 sed -i 's/^#\(.*src-git other\)/\1/' "feeds.conf.default"
 
@@ -815,6 +792,7 @@ else
 fi
 ./scripts/feeds install -a > /dev/null 2>&1
 # 使用自定义配置文件
+
 [[ -f ${BUILD_PATH}/$CONFIG_FILE ]] && mv ${BUILD_PATH}/$CONFIG_FILE .config
 }
 
@@ -845,6 +823,14 @@ if [[ "${AdGuardHome_Core}" == "1" ]]; then
 else
   [[ -f "${HOME_PATH}/files/usr/bin/AdGuardHome" ]] && rm -rf ${HOME_PATH}/files/usr/bin/AdGuardHome
   echo "AdGuardHome_Core=0" >> ${GITHUB_ENV}
+fi
+
+# cloudflared内核
+if [[ "${cloudflared_Core}" == "1" ]]; then
+  echo "cloudflared_Core=1" >> ${GITHUB_ENV}
+else
+  [[ -f "${HOME_PATH}/files/usr/bin/cloudflared" ]] && rm -rf ${HOME_PATH}/files/usr/bin/cloudflared
+  echo "cloudflared_Core=0" >> ${GITHUB_ENV}
 fi
 
 # openclash内核
@@ -1427,6 +1413,10 @@ if [[ "${AdGuardHome_Core}" == "1" ]]; then
   echo -e "\nCONFIG_PACKAGE_luci-app-adguardhome=y" >> ${HOME_PATH}/.config
 fi
 
+if [[ "${cloudflared_Core}" == "1" ]]; then
+  echo -e "\nCONFIG_PACKAGE_luci-app-cloudflared=y" >> ${HOME_PATH}/.config
+fi
+
 if [[ `grep -c "CONFIG_PACKAGE_dnsmasq_full_nftset=y" ${HOME_PATH}/.config` -eq '1' ]]; then
   if [[ `grep -c "CONFIG_PACKAGE_luci-app-passwall2_Nftables_Transparent_Proxy=y" ${HOME_PATH}/.config` -eq '1' ]]; then
     sed -i 's/CONFIG_PACKAGE_dnsmasq_full_nftset=y/# CONFIG_PACKAGE_dnsmasq_full_nftset is not set/g' ${HOME_PATH}/.config
@@ -1581,52 +1571,57 @@ echo "LINUX_KERNEL=${LINUX_KERNEL}" >> ${GITHUB_ENV}
 }
 
 function Diy_adguardhome() {
-cd ${HOME_PATH}
-if [[ `grep -c "CONFIG_ARCH=\"x86_64\"" ${HOME_PATH}/.config` -eq '1' ]]; then
-  Arch="linux_amd64"
-  Archclash="linux-amd64"
-  echo "CPU架构：amd64"
-elif [[ `grep -c "CONFIG_ARCH=\"i386\"" ${HOME_PATH}/.config` -eq '1' ]]; then
-  Arch="linux_386"
-  Archclash="linux-386"
-  echo "CPU架构：X86 32"
-elif [[ `grep -c "CONFIG_ARCH=\"aarch64\"" ${HOME_PATH}/.config` -eq '1' ]]; then
-  Arch="linux_arm64"
-  Archclash="linux-arm64"
-  echo "CPU架构：arm64"
-elif [[ `grep -c "CONFIG_arm_v7=y" ${HOME_PATH}/.config` -eq '1' ]]; then
-  Arch="linux_armv7"
-  Archclash="linux-armv7"
-  echo "CPU架构：armv7"
-elif [[ `grep -c "CONFIG_ARCH=\"arm\"" ${HOME_PATH}/.config` -eq '1' ]] && [[ `grep -c "CONFIG_arm_v7=y" ${HOME_PATH}/.config` -eq '0' ]] && [[ `grep "CONFIG_TARGET_ARCH_PACKAGES" "${HOME_PATH}/.config" |grep -c "vfp"` -eq '1' ]]; then
-  Arch="linux_armv6"
-  Archclash="linux-armv6"
-  echo "CPU架构：armv6"
-elif [[ `grep -c "CONFIG_ARCH=\"arm\"" ${HOME_PATH}/.config` -eq '1' ]] && [[ `grep -c "CONFIG_arm_v7=y" ${HOME_PATH}/.config` -eq '0' ]] && [[ `grep "CONFIG_TARGET_ARCH_PACKAGES" "${HOME_PATH}/.config" |grep -c "vfp"` -eq '0' ]]; then
-  Arch="linux_armv5"
-  Archclash="linux-armv5"
-  echo "CPU架构：armv6"
-elif [[ `grep -c "CONFIG_ARCH=\"mips\"" ${HOME_PATH}/.config` -eq '1' ]]; then
-  Arch="linux_mips_softfloat"
-  Archclash="linux-mips-softfloat"
-  echo "CPU架构：mips"
-elif [[ `grep -c "CONFIG_ARCH=\"mips64\"" ${HOME_PATH}/.config` -eq '1' ]]; then
-  Arch="linux_mips64_softfloat"
-  Archclash="linux-mips64"
-  echo "CPU架构：mips64"
-elif [[ `grep -c "CONFIG_ARCH=\"mipsel\"" ${HOME_PATH}/.config` -eq '1' ]]; then
-  Arch="linux_mipsle_softfloat"
-  Archclash="linux-mipsle-softfloat"
-  echo "CPU架构：mipsel"
-elif [[ `grep -c "CONFIG_ARCH=\"mips64el\"" ${HOME_PATH}/.config` -eq '1' ]]; then
-  Arch="linux_mips64le_softfloat"
-  Archclash="linux-mips64le"
-  echo "CPU架构：mips64el"
-else
-  echo "不了解您的CPU为何架构"
-  weizhicpu="1"
-fi
+  cd "${HOME_PATH}"
+  weizhicpu="0"
 
+  if grep -q 'CONFIG_ARCH="x86_64"' "${HOME_PATH}/.config"; then
+    Arch="linux_amd64"
+    Archclash="linux-amd64"
+    echo "CPU架构：amd64"
+  elif grep -q 'CONFIG_ARCH="i386"' "${HOME_PATH}/.config"; then
+    Arch="linux_386"
+    Archclash="linux-386"
+    echo "CPU架构：X86 32"
+  elif grep -q 'CONFIG_ARCH="aarch64"' "${HOME_PATH}/.config"; then
+    Arch="linux_arm64"
+    Archclash="linux-arm64"
+    echo "CPU架构：arm64"
+  elif grep -q 'CONFIG_arm_v7=y' "${HOME_PATH}/.config"; then
+    Arch="linux_armv7"
+    Archclash="linux-armv7"
+    echo "CPU架构：armv7"
+  elif grep -q 'CONFIG_ARCH="arm"' "${HOME_PATH}/.config" && ! grep -q 'CONFIG_arm_v7=y' "${HOME_PATH}/.config"; then
+    if grep -q 'vfp' <<<"$(grep 'CONFIG_TARGET_ARCH_PACKAGES' "${HOME_PATH}/.config")"; then
+      Arch="linux_armv6"
+      Archclash="linux-armv6"
+      echo "CPU架构：armv6"
+    else
+      Arch="linux_armv5"
+      Archclash="linux-armv5"
+      echo "CPU架构：armv6"
+    fi
+  elif grep -q 'CONFIG_ARCH="mips"' "${HOME_PATH}/.config"; then
+    Arch="linux_mips_softfloat"
+    Archclash="linux-mips-softfloat"
+    echo "CPU架构：mips"
+  elif grep -q 'CONFIG_ARCH="mips64"' "${HOME_PATH}/.config"; then
+    Arch="linux_mips64_softfloat"
+    Archclash="linux-mips64"
+    echo "CPU架构：mips64"
+  elif grep -q 'CONFIG_ARCH="mipsel"' "${HOME_PATH}/.config"; then
+    Arch="linux_mipsle_softfloat"
+    Archclash="linux-mipsle-softfloat"
+    echo "CPU架构：mipsel"
+  elif grep -q 'CONFIG_ARCH="mips64el"' "${HOME_PATH}/.config"; then
+    Arch="linux_mips64le_softfloat"
+    Archclash="linux-mips64le"
+    echo "CPU架构：mips64el"
+  else
+    echo "不了解您的CPU为何架构"
+    weizhicpu="1"
+  fi
+
+# OpenClash内核下载
 if [[ ! "${weizhicpu}" == "1" ]] && [[ -n "${OpenClash_Core}" ]] && [[ "${OpenClash_branch}" =~ (master|dev) ]]; then
   echo "正在执行：给openclash下载核心"
   rm -rf ${HOME_PATH}/files/etc/openclash/core
@@ -1687,11 +1682,12 @@ if [[ ! "${weizhicpu}" == "1" ]] && [[ -n "${OpenClash_Core}" ]] && [[ "${OpenCl
   rm -rf ${HOME_PATH}/clash-neihe
 fi
 
+# AdGuardHome内核下载
 if [[ ! "${weizhicpu}" == "1" ]] && [[ "${AdGuardHome_Core}" == "1" ]]; then
   echo "正在执行：给adguardhome下载核心"
-  rm -rf ${HOME_PATH}/AdGuardHome && rm -rf ${HOME_PATH}/files/usr/bin
+  rm -rf ${HOME_PATH}/AdGuardHome && rm -rf ${HOME_PATH}/files/usr/bin/AdGuardHome
   wget -q https://github.com/shidahuilang/common/releases/download/API/AdGuardHome.api -O AdGuardHome.api
-  if [[ $? -ne 0 ]];then
+  if [[ $? -ne 0 ]]; then
     curl -fsSL https://github.com/shidahuilang/common/releases/download/API/AdGuardHome.api -o AdGuardHome.api
   fi
   latest_ver="$(grep -E 'tag_name' 'AdGuardHome.api' |grep -E 'v[0-9.]+' -o 2>/dev/null)"
@@ -1711,7 +1707,24 @@ if [[ ! "${weizhicpu}" == "1" ]] && [[ "${AdGuardHome_Core}" == "1" ]]; then
   else
     echo "增加AdGuardHome核心失败"
   fi
-    rm -rf ${HOME_PATH}/{AdGuardHome_${Arch}.tar.gz,AdGuardHome}
+  rm -rf ${HOME_PATH}/{AdGuardHome_${Arch}.tar.gz,AdGuardHome}
+fi
+
+# cloudflared内核下载
+if [[ ! "${weizhicpu}" == "1" ]] && [[ "${cloudflared_Core}" == "1" ]]; then
+  echo "正在执行：给cloudflared下载核心"
+  wget -q https://github.com/cloudflare/cloudflared/releases/download/2024.6.1/cloudflared-linux-amd64 -O cloudflared
+  if [[ $? -ne 0 ]]; then
+    echo "cloudflared 下载失败，尝试使用备用链接"
+    curl -fsSL https://github.com/cloudflare/cloudflared/releases/download/2024.6.1/cloudflared-linux-amd64 -o cloudflared
+  fi
+  if [[ -f "cloudflared" ]]; then
+    mv -f cloudflared ${HOME_PATH}/files/usr/bin/
+    sudo chmod +x ${HOME_PATH}/files/usr/bin/cloudflared
+    echo "增加cloudflared核心完成"
+  else
+    echo "增加cloudflared核心失败"
+  fi
 fi
 }
 
@@ -1870,7 +1883,7 @@ else
   sudo ./make -b ${amlogic_model} -k ${amlogic_kernel} -a ${auto_kernel} -s ${rootfs_size} -r ${kernel_repo} -u ${kernel_usage}
 fi
 if [[ 0 -eq $? ]]; then
-  sudo mv -f ${GITHUB_WORKSPACE}/amlogic/openwrt/out/* ${FIRMWARE_PATH}/ && sync
+  sudo mv -f ${GITHUB_WORKSPACE}/amlogic/out/* ${FIRMWARE_PATH}/ && sync
   sudo rm -rf ${GITHUB_WORKSPACE}/amlogic
   echo "FIRMWARE_PATH=${FIRMWARE_PATH}" >> ${GITHUB_ENV}
   echo
@@ -1998,7 +2011,7 @@ false)
     export Continue_selecting="0"
   fi
 ;;
-8370|8272|8171)
+7763|8370|8272|8171)
   if [[ `echo "${cpu_model}" |grep -ic "${CPU_SELECTION}"` -eq '0' ]]; then
     export chonglaixx="非${CPU_SELECTION}-重新编译"
     export chonglaiss="并非是您选择的${CPU_SELECTION}CPU"
@@ -2194,7 +2207,9 @@ else
 fi
 echo
 TIME z " 系统空间      类型   总数  已用  可用 使用率"
-df -hT $PWD
+echo "=============================================================="
+df -hT                                             
+echo "=============================================================="
 echo
 echo
 
