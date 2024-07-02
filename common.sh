@@ -300,16 +300,27 @@ if [[ -f "${HOME_PATH}/feeds/luci/modules/luci-mod-system/root/usr/share/luci/me
 else
   echo "src-git langge2 https://github.com/shidahuilang/openwrt-package.git;Theme1" >> "feeds.conf.default"
 fi
+
 z="*luci-theme-argon*,*luci-app-argon-config*,*luci-theme-Butterfly*,*luci-theme-netgear*,*luci-theme-atmaterial*, \
 luci-theme-rosy,luci-theme-darkmatter,luci-theme-infinityfreedom,luci-theme-design,luci-app-design-config, \
 luci-theme-bootstrap-mod,luci-theme-freifunk-generic,luci-theme-kucat, \
 luci-app-eqos,adguardhome,luci-app-adguardhome,mosdns,luci-app-mosdns,luci-app-wol,luci-app-openclash, \
 luci-app-gost,gost,luci-app-smartdns,smartdns,luci-app-wizard,luci-app-msd_lite,msd_lite, \
 luci-app-ssr-plus,*luci-app-passwall*,luci-app-vssr,lua-maxminddb,v2dat,v2ray-geodata"
+
 t=(${z//,/ })
-for x in ${t[@]}; do \
-  find . -type d -name "${x}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+
+for x in ${t[@]}; do
+  find . -type d -name "${x}" | grep -v 'langge\|freifunk\|helloworld\|passwall3' | xargs -i rm -rf {}
 done
+
+# 检查 Makefile 是否存在并处理缺失的情况
+MAKEFILE_PATH="/path/to/Makefile"
+if [[ ! -f "$MAKEFILE_PATH" ]]; then
+  echo "Makefile not found at $MAKEFILE_PATH. Please check the path and try again."
+  exit 1
+fi
+
 
 case "${SOURCE_CODE}" in
 COOLSNOWWOLF)
