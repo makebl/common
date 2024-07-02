@@ -728,21 +728,7 @@ cd ${HOME_PATH}
 
 function Diy_OFFICIAL() {
 cd ${HOME_PATH}
-if [[ "${REPO_BRANCH}" =~ (openwrt-19.07|openwrt-21.02) ]]; then
-  if [[ -d "${HOME_PATH}/build/common/Share/v2raya" ]]; then
-    rm -rf ${HOME_PATH}/feeds/helloworld/v2raya
-    cp -Rf ${HOME_PATH}/build/common/Share/v2raya ${HOME_PATH}/feeds/helloworld/v2raya
-  fi
-fi
-if [[ "${REPO_BRANCH}" =~ (openwrt-19.07|openwrt-21.02|openwrt-22.03) ]]; then
-  if [[ -d "${HOME_PATH}/feeds/passwall3/shadowsocksr-libev" ]]; then
-    curl -o ${HOME_PATH}/feeds/passwall3/shadowsocksr-libev/Makefile https://raw.githubusercontent.com/shidahuilang/common/main/Share/shadowsocksr-libev/Makefile
-  fi
-  # 降低shadowsocks-rust版本,最新版本编译不成功
-  if [[ -d "${HOME_PATH}/feeds/passwall3/shadowsocks-rust" ]]; then
-    curl -o ${HOME_PATH}/feeds/passwall3/shadowsocks-rust/Makefile https://raw.githubusercontent.com/shidahuilang/common/main/Share/shadowsocks-rust/Makefile
-  fi
-fi
+
 }
 
 
