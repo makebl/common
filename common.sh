@@ -2100,9 +2100,9 @@ esac
 function Diy_xinxi() {
 	# 更新plugins插件列表
 	local plugins="$(grep -Eo "CONFIG_PACKAGE_luci-app-.*=y|CONFIG_PACKAGE_luci-theme-.*=y" $HOME_PATH/.config |grep -v 'INCLUDE\|_Proxy\|_static\|_dynamic' |sed 's/=y//' |sed 's/CONFIG_PACKAGE_//g')"
-	if [[ "$plugins" != "$(cat $repo_plugins)" ]]; then
+	if [[ "$plugins" != "$(cat ${repo_plugins})" ]]; then
 		ENABLE_REPO_UPDATE="true"
-		echo "$plugins" > $repo_plugins
+		echo "$plugins" > ${repo_plugins}
 	fi
 
 echo
