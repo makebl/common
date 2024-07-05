@@ -768,7 +768,7 @@ if [[ "${OpenClash_branch}" == "1" ]]; then
   echo "src-git OpenClash https://github.com/vernesong/OpenClash.git;dev" >> "feeds.conf.default"
   echo "OpenClash_branch=dev" >> ${GITHUB_ENV}
 else
-  echo "src-git OpenClash https://github.com/makebl/luci-app-openclash.git;master" >> "feeds.conf.default"
+  echo "src-git OpenClash https://github.com/shidahuilang/luci-app-openclash.git;master" >> "feeds.conf.default"
   echo "OpenClash_branch=master" >> ${GITHUB_ENV}
 fi
 
