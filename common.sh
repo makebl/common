@@ -2098,12 +2098,15 @@ esac
 
 
 function Diy_xinxi() {
-	# 更新plugins插件列表
-	local plugins="$(grep -Eo "CONFIG_PACKAGE_luci-app-.*=y|CONFIG_PACKAGE_luci-theme-.*=y" $HOME_PATH/.config |grep -v 'INCLUDE\|_Proxy\|_static\|_dynamic' |sed 's/=y//' |sed 's/CONFIG_PACKAGE_//g')"
-	if [[ "$plugins" != "$(cat ${repo_plugins})" ]]; then
-		ENABLE_REPO_UPDATE="true"
-		echo "$plugins" > ${repo_plugins}
-	fi
+Plug_in1="$(grep -Eo "CONFIG_PACKAGE_luci-app-.*=y|CONFIG_PACKAGE_luci-theme-.*=y" .config |grep -v 'INCLUDE\|_Proxy\|_static\|_dynamic' |sed 's/=y//' |sed 's/CONFIG_PACKAGE_//g')"
+Plug_in2="$(echo "${Plug_in1}" |sed 's/^/、/g' |sed 's/$/\"/g' |awk '$0=NR$0' |sed 's/^/TIME g \"       /g')"
+echo "${Plug_in2}" >Plug-in
+
+if [[ `grep -c "CONFIG_GRUB_EFI_IMAGES=y" ${HOME_PATH}/.config` -eq '1' ]]; then
+  export EFI_NO="1"
+else
+  export EFI_NO="0"
+fi
 
 echo
 TIME b "编译源码: ${SOURCE}"
