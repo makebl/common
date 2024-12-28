@@ -123,9 +123,10 @@ COOLSNOWWOLF)
   export SOURCE="Lede"
   export SOURCE_OWNER="Lean's"
 
-  # 直接设置分支
-  export REPO_BRANCH="master"  # 或者 "openwrt-23.05"
+  # 强制设置分支为 master
+  export REPO_BRANCH="master"  # 这里设置为 master
 
+  # 检查 REPO_BRANCH 的值并设置相应的环境变量
   if [[ "${REPO_BRANCH}" == "master" ]]; then
     export REPO_URL="https://github.com/coolsnowwolf/lede"
     export LUCI_EDITION="master"
@@ -147,6 +148,8 @@ COOLSNOWWOLF)
     export LUCI_URL="https://github.com/coolsnowwolf/luci"
     export LUCI_BRANCH="openwrt-23.05"
     echo "LUCI_BRANCH=openwrt-23.05" >> ${GITHUB_ENV}
+
+
   elif [[ "${REPO_BRANCH}" == "gl-ax1800" ]]; then
     export REPO_URL="https://github.com/coolsnowwolf/openwrt-gl-ax1800"
     export LUCI_EDITION="gl-ax1800"
