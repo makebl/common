@@ -120,48 +120,11 @@ chmod -R +x ${start_path} && source ${start_path}
 
 case "${SOURCE_CODE}" in
 COOLSNOWWOLF)
+  export REPO_URL="https://github.com/coolsnowwolf/lede"
   export SOURCE="Lede"
   export SOURCE_OWNER="Lean's"
-
-  # 强制设置分支为 master
-  export REPO_BRANCH="openwrt-23.05"  # 这里设置为 master
-
-  # 检查 REPO_BRANCH 的值并设置相应的环境变量
-  if [[ "${REPO_BRANCH}" == "master" ]]; then
-    export REPO_URL="https://github.com/coolsnowwolf/lede"
-    export LUCI_EDITION="master"
-    export DIY_WORK="${FOLDER_NAME}master"
-    echo "GL_BRANCH=lede" >> ${GITHUB_ENV}
-    
-    # 添加对 luci 的支持
-    export LUCI_URL="https://github.com/coolsnowwolf/luci"
-    export LUCI_BRANCH="master"
-    echo "LUCI_BRANCH=master" >> ${GITHUB_ENV}
-
-  elif [[ "${REPO_BRANCH}" == "openwrt-23.05" ]]; then
-    export REPO_URL="https://github.com/coolsnowwolf/lede"
-    export LUCI_EDITION="openwrt-23.05"
-    export DIY_WORK="${FOLDER_NAME}openwrt-23.05"
-    echo "GL_BRANCH=lede" >> ${GITHUB_ENV}
-    
-    # 添加对 luci 的支持
-    export LUCI_URL="https://github.com/coolsnowwolf/luci"
-    export LUCI_BRANCH="openwrt-23.05"
-    echo "LUCI_BRANCH=openwrt-23.05" >> ${GITHUB_ENV}
-
-
-  elif [[ "${REPO_BRANCH}" == "gl-ax1800" ]]; then
-    export REPO_URL="https://github.com/coolsnowwolf/openwrt-gl-ax1800"
-    export LUCI_EDITION="gl-ax1800"
-    export REPO_BRANCH="master"
-    export DIY_WORK="${FOLDER_NAME}ax1800"
-    echo "GL_BRANCH=lede_ax1800" >> ${GITHUB_ENV}
-  else
-    export REPO_URL="https://github.com/coolsnowwolf/lede"
-    export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
-    export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
-    echo "GL_BRANCH=lede" >> ${GITHUB_ENV}
-  fi
+  export LUCI_EDITION="23.05"
+  export DIY_WORK="${FOLDER_NAME}master"
 ;;
 LIENOL)
   export REPO_URL="https://github.com/Lienol/openwrt"
