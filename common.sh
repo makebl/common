@@ -124,7 +124,7 @@ COOLSNOWWOLF)
   export SOURCE_OWNER="Lean's"
   if [[ "${REPO_BRANCH}" == "master" ]]; then
     export REPO_URL="https://github.com/coolsnowwolf/lede"
-    export LUCI_EDITION="18.06"
+    export LUCI_EDITION="master"
     export DIY_WORK="${FOLDER_NAME}master"
     echo "GL_BRANCH=lede" >> ${GITHUB_ENV}
   elif [[ "${REPO_BRANCH}" == "gl-ax1800" ]]; then
