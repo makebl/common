@@ -777,6 +777,8 @@ fi
 
 cat feeds.conf.default|awk '!/^#/'|awk '!/^$/'|awk '!a[$1" "$2]++{print}' >uniq.conf
 mv -f uniq.conf feeds.conf.default
+sed -i 's@# src-git luci@src-git luci@g' "feeds.conf.default"
+sed -i 's@src-git luci@## src-git luci@g' "feeds.conf.default"
 sed -i 's@.*dalang*@#&@g' "feeds.conf.default"
 sed -i 's@.*src-git lienol*@#&@g' "feeds.conf.default"
 sed -i 's@.*src-git other*@#&@g' "feeds.conf.default"
