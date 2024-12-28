@@ -122,11 +122,31 @@ case "${SOURCE_CODE}" in
 COOLSNOWWOLF)
   export SOURCE="Lede"
   export SOURCE_OWNER="Lean's"
+
+  # 直接设置分支
+  export REPO_BRANCH="master"  # 或者 "openwrt-23.05"
+
   if [[ "${REPO_BRANCH}" == "master" ]]; then
     export REPO_URL="https://github.com/coolsnowwolf/lede"
     export LUCI_EDITION="master"
     export DIY_WORK="${FOLDER_NAME}master"
     echo "GL_BRANCH=lede" >> ${GITHUB_ENV}
+    
+    # 添加对 luci 的支持
+    export LUCI_URL="https://github.com/coolsnowwolf/luci"
+    export LUCI_BRANCH="master"
+    echo "LUCI_BRANCH=master" >> ${GITHUB_ENV}
+
+  elif [[ "${REPO_BRANCH}" == "openwrt-23.05" ]]; then
+    export REPO_URL="https://github.com/coolsnowwolf/lede"
+    export LUCI_EDITION="openwrt-23.05"
+    export DIY_WORK="${FOLDER_NAME}openwrt-23.05"
+    echo "GL_BRANCH=lede" >> ${GITHUB_ENV}
+    
+    # 添加对 luci 的支持
+    export LUCI_URL="https://github.com/coolsnowwolf/luci"
+    export LUCI_BRANCH="openwrt-23.05"
+    echo "LUCI_BRANCH=openwrt-23.05" >> ${GITHUB_ENV}
   elif [[ "${REPO_BRANCH}" == "gl-ax1800" ]]; then
     export REPO_URL="https://github.com/coolsnowwolf/openwrt-gl-ax1800"
     export LUCI_EDITION="gl-ax1800"
