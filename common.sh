@@ -124,7 +124,7 @@ COOLSNOWWOLF)
   export SOURCE_OWNER="Lean's"
 
   # 强制设置分支为 master
-  export REPO_BRANCH="master"  # 这里设置为 master
+  export REPO_BRANCH="openwrt-23.05"  # 这里设置为 master
 
   # 检查 REPO_BRANCH 的值并设置相应的环境变量
   if [[ "${REPO_BRANCH}" == "master" ]]; then
