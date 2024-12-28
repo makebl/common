@@ -287,15 +287,14 @@ if [[ -n "${LUCI_CHECKUT}" ]]; then
   git switch -c ${LUCI_CHECKUT}
 fi
 git pull
-
+sed -i 's@# src-git luci@src-git luci@g' "feeds.conf.default"
+sed -i 's@src-git luci@## src-git luci@g' "feeds.conf.default"
 sed -i '/langge/d; /helloworld/d; /passwall/d; /OpenClash/d' "feeds.conf.default"
 cat feeds.conf.default|awk '!/^#/'|awk '!/^$/'|awk '!a[$1" "$2]++{print}' >uniq.conf
 mv -f uniq.conf feeds.conf.default
 
 # 这里增加了源,要对应的删除/etc/opkg/distfeeds.conf插件源
 cat >>"feeds.conf.default" <<-EOF
-sed -i 's@# src-git luci@src-git luci@g' "feeds.conf.default"
-sed -i 's@src-git luci@## src-git luci@g' "feeds.conf.default"
 src-git langge1 https://github.com/makebl/openwrt-package.git;${SOURCE}
 src-git helloworld https://github.com/fw876/helloworld.git
 src-git passwall3 https://github.com/xiaorouji/openwrt-passwall-packages;main
