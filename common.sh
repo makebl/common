@@ -302,7 +302,6 @@ for x in ${t[@]}; do \
   find . -type d -name "${x}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
 done
 
-case "${SOURCE_CODE}" in
 
 # 删除软件包自带插件
 #rm -rf feeds/packages/net/softethervpn5
