@@ -465,7 +465,7 @@ else
     sed -i 's?luci-app-autoupdate??g' ${HOME_PATH}/include/target.mk
   fi
 fi
-}
+
 
 
 function Diy_Notice() {
