@@ -336,7 +336,7 @@ IMMORTALWRT)
   for i in ${c[@]}; do \
     find . -type d -name "${i}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
   done
-
+;;
 OFFICIAL)
   s="luci-app-wrtbwmon,wrtbwmon,luci-app-dockerman,docker,dockerd,bcm27xx-userland,luci-app-aliyundrive-webdav,aliyundrive-webdav,aliyundrive-fuse"
   c=(${s//,/ })
@@ -373,6 +373,9 @@ esac
 for X in $(ls -1 "${HOME_PATH}/feeds/passwall3"); do
   find . -type d -name "${X}" |grep -v 'langge\|passwall3' |xargs -i rm -rf {}
 done
+  fi
+;;
+esac
 # 删除软件包自带插件
 rm -rf feeds/packages/net/softethervpn5
 rm -rf feeds/packages/net/cloudflared
