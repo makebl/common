@@ -305,10 +305,10 @@ done
 case "${SOURCE_CODE}" in
 
 # 删除软件包自带插件
-rm -rf feeds/packages/net/softethervpn5
-rm -rf feeds/packages/net/cloudflared
-rm -rf feeds/package/luci-app-smartdns
-rm -rf feeds/package/luci-app-zerotier
+#rm -rf feeds/packages/net/softethervpn5
+#rm -rf feeds/packages/net/cloudflared
+#rm -rf feeds/package/luci-app-smartdns
+#rm -rf feeds/package/luci-app-zerotier
 
 # 更换golang版本
 rm -rf ${HOME_PATH}/feeds/packages/lang/golang
