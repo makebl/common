@@ -340,27 +340,26 @@ IMMORTALWRT)
 OFFICIAL)
   s="luci-app-wrtbwmon,wrtbwmon,luci-app-dockerman,docker,dockerd,bcm27xx-userland,luci-app-aliyundrive-webdav,aliyundrive-webdav,aliyundrive-fuse"
   c=(${s//,/ })
-  for i in ${c[@]}; do \
-    find . -type d -name "${i}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+  for i in ${c[@]}; do
+    find . -type d -name "${i}" | grep -v 'langge\|freifunk\|helloworld\|passwall3' | xargs -i rm -rf {};
   done
   if [[ "${REPO_BRANCH}" == "openwrt-19.07" ]]; then
     s="luci-app-vssr,lua-maxminddb,luci-app-natter,natter,luci-app-unblockneteasemusic"
     c=(${s//,/ })
-    for i in ${c[@]}; do \
-      find . -type d -name "${i}" |grep -v 'freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+    for i in ${c[@]}; do
+      find . -type d -name "${i}" | grep -v 'freifunk\|helloworld\|passwall3' | xargs -i rm -rf {};
     done
-
-
     $svn https://github.com/Lienol/openwrt/tree/21.02/tools/cmake ${HOME_PATH}/tools/cmake
   fi
   if [[ "${REPO_BRANCH}" == "openwrt-21.02" ]]; then
     s="luci-app-vssr,lua-maxminddb,luci-app-natter,natter,luci-app-unblockneteasemusic"
     c=(${s//,/ })
-    for i in ${c[@]}; do \
-      find . -type d -name "${i}" |grep -v 'freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+    for i in ${c[@]}; do
+      find . -type d -name "${i}" | grep -v 'freifunk\|helloworld\|passwall3' | xargs -i rm -rf {};
     done
-fi
-;;
+  fi
+  ;;  
+
 XWRT)
   s="luci-app-wrtbwmon,wrtbwmon,luci-app-dockerman,docker,dockerd,bcm27xx-userland,luci-app-aliyundrive-webdav,aliyundrive-webdav,aliyundrive-fuse"
   c=(${s//,/ })
