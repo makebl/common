@@ -567,7 +567,9 @@ fi
 cp -Rf ${HOME_PATH}/build/common/custom/default-setting "${DEFAULT_PATH}"
 sudo chmod +x "${DEFAULT_PATH}"
 sed -i '/exit 0$/d' "${DEFAULT_PATH}"
-sed -i "s?112233?${SOURCE} - ${LUCI_EDITION}?g" "${DEFAULT_PATH}" > /dev/null 2>&1
+if [[ -f "${DEFAULT_PATH}" ]]; then
+  sed -i "s?112233?${SOURCE} - ${LUCI_EDITION}?g" "${DEFAULT_PATH}" > /dev/null 2>&1
+fi
 sed -i 's/root:.*/root::0:0:99999:7:::/g' ${FILES_PATH}/etc/shadow
 if [[ `grep -Eoc "admin:.*" ${FILES_PATH}/etc/shadow` -eq '1' ]]; then
   sed -i 's/admin:.*/admin::0:0:99999:7:::/g' ${FILES_PATH}/etc/shadow
