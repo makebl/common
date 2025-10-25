@@ -177,13 +177,25 @@ esac
 
 export DIY_PART_SH="diy-part.sh"
 echo "DIY_PART_SH=${DIY_PART_SH}" >> ${GITHUB_ENV}
-echo "HOME_PATH=${GITHUB_WORKSPACE}/openwrt" >> ${GITHUB_ENV}
+# 在当前进程直接导出 HOME_PATH，避免变量为空导致路径变为绝对根目录
+export HOME_PATH="${GITHUB_WORKSPACE}/openwrt"
+echo "HOME_PATH=${HOME_PATH}" >> ${GITHUB_ENV}
 # 自动检测并修正 HOME_PATH：如顶层缺少 Makefile，尝试寻找包含 OpenWrt 规则的 Makefile
-if [[ ! -f "${GITHUB_WORKSPACE}/openwrt/Makefile" ]]; then
-  alt_path=$(find "${GITHUB_WORKSPACE}/openwrt" -maxdepth 2 -type f -name Makefile -exec grep -l 'include \$(TOPDIR)/rules.mk' {} \; | head -n1)
+if [[ ! -f "${HOME_PATH}/Makefile" ]]; then
+  # 优先在 5 层内查找包含 OpenWrt 规则的 Makefile
+  alt_path=$(find "${GITHUB_WORKSPACE}/openwrt" -maxdepth 5 -type f -name Makefile -exec grep -l 'include \$(TOPDIR)/rules.mk' {} \; | head -n1)
+  if [[ -z "${alt_path}" ]]; then
+    # 兼容某些 find/grep 组合异常，改用递归 grep
+    alt_path=$(grep -rl --include=Makefile -m1 -e 'include \$(TOPDIR)/rules.mk' "${GITHUB_WORKSPACE}/openwrt" 2>/dev/null | head -n1)
+  fi
   if [[ -n "${alt_path}" ]]; then
     alt_dir=$(dirname "${alt_path}")
-    echo "HOME_PATH=${alt_dir}" >> ${GITHUB_ENV}
+    echo "发现有效 Makefile: ${alt_path}" >&2
+    export HOME_PATH="${alt_dir}"
+    echo "HOME_PATH=${HOME_PATH}" >> ${GITHUB_ENV}
+  else
+    echo "错误：未在 ${GITHUB_WORKSPACE}/openwrt 中找到包含 OpenWrt 规则的 Makefile。当前分支(${REPO_BRANCH})可能不是可编译的 OpenWrt 分支。" >&2
+    exit 2
   fi
 fi
 echo "SOURCE_CODE=${SOURCE_CODE}" >> ${GITHUB_ENV}
