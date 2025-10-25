@@ -100,6 +100,19 @@ do
       sed -i "s?${CONFIG_FILE1}?${CONFIG_FILE2}?g" ${Y}
     fi
     cp -Rf ${GITHUB_WORKSPACE}/shangyou/build/Immortalwrt/* "${X}"
+  elif [ -n "$(grep 'SOURCE_CODE="IORTALWRT"' "${a}")" ]; then
+    Y="${GITHUB_WORKSPACE}/shangyou/build/ortalwrt/settings.ini"
+    REPO_BRANCH1="$(grep -E "REPO_BRANCH=" "${Y}" |sed 's/^[ ]*//g' |grep -v '^#' |awk '{print $(1)}' |sed 's?=?\\&?g' |sed 's?"?\\&?g')"
+    CONFIG_FILE1="$(grep -E "CONFIG_FILE=" "${Y}" |sed 's/^[ ]*//g' |grep -v '^#' |awk '{print $(1)}' |sed 's?=?\\&?g' |sed 's?"?\\&?g')"
+    REPO_BRANCH2="$(grep -E "REPO_BRANCH=" "${a}" |sed 's/^[ ]*//g' |grep -v '^#' |awk '{print $(1)}' |sed 's?=?\\&?g' |sed 's?"?\\&?g')"
+    CONFIG_FILE2="$(grep -E "CONFIG_FILE=" "${a}" |sed 's/^[ ]*//g' |grep -v '^#' |awk '{print $(1)}' |sed 's?=?\\&?g' |sed 's?"?\\&?g')"
+    if [[ -n "${REPO_BRANCH1}" ]] && [[ -n "${REPO_BRANCH2}" ]]; then
+      sed -i "s?${REPO_BRANCH1}?${REPO_BRANCH2}?g" ${Y}
+    fi
+    if [[ -n "${CONFIG_FILE1}" ]] && [[ -n "${CONFIG_FILE2}" ]]; then
+      sed -i "s?${CONFIG_FILE1}?${CONFIG_FILE2}?g" ${Y}
+    fi
+    cp -Rf ${GITHUB_WORKSPACE}/shangyou/build/ortalwrt/* "${X}"    
   elif [ -n "$(grep 'SOURCE_CODE="XWRT"' "${a}")" ]; then
     Y="${GITHUB_WORKSPACE}/shangyou/build/Xwrt/settings.ini"
     REPO_BRANCH1="$(grep -E "REPO_BRANCH=" "${Y}" |sed 's/^[ ]*//g' |grep -v '^#' |awk '{print $(1)}' |sed 's?=?\\&?g' |sed 's?"?\\&?g')"
@@ -141,7 +154,9 @@ do
   SOURCE_CODE1="$({ grep 'SOURCE_CODE=' "${GITHUB_WORKSPACE}/operates/${a}/settings.ini" |grep -v '^#' |cut -d '"' -f2; } 2>"/dev/null")"
   if [[ "${SOURCE_CODE1}" == "IMMORTALWRT" ]]; then
     cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/Immortalwrt.yml ${f}
-  elif [[ "${SOURCE_CODE1}" == "COOLSNOWWOLF" ]]; then
+  elif [[ "${SOURCE_CODE1}" == "ORTALWRT" ]]; then
+    cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/ortalwrt.yml ${f}    
+  elif [[ "${SOURCE_CODE1}" == "ORTALWRT" ]]; then
     cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/Lede.yml ${f}
   elif [[ "${SOURCE_CODE1}" == "LIENOL" ]]; then 
     cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/Lienol.yml ${f}
