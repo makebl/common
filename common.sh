@@ -275,6 +275,7 @@ cd ${HOME_PATH}
 [[ ! -d "${HOME_PATH}/LICENSES/doc" ]] && mkdir -p "${HOME_PATH}/LICENSES/doc"
 [[ ! -d "${HOME_PATH}/build_logo" ]] && mkdir -p "${HOME_PATH}/build_logo"
 
+# 1. 切到最新 tag（如果有）
 LUCI_CHECKUT="$(git tag -l |grep '^V\|^v' |awk 'END {print}')"
 if [[ -n "${LUCI_CHECKUT}" ]]; then
   git checkout ${LUCI_CHECKUT}
@@ -282,23 +283,44 @@ if [[ -n "${LUCI_CHECKUT}" ]]; then
 fi
 git pull
 
+# 2. 清理旧源并去重
 sed -i '/langge/d; /helloworld/d; /passwall/d; /OpenClash/d' "feeds.conf.default"
-cat feeds.conf.default|awk '!/^#/'|awk '!/^$/'|awk '!a[$1" "$2]++{print}' >uniq.conf
+awk '!/^#|^$/ && !a[$1" "$2]++' feeds.conf.default > uniq.conf
 mv -f uniq.conf feeds.conf.default
 
-# 这里增加了源,要对应的删除/etc/opkg/distfeeds.conf插件源
+# 3. 检查分支是否存在再放源
+if ! git ls-remote --heads https://github.com/shidahuilang/openwrt-package.git ${SOURCE} >/dev/null; then
+  echo "::error::分支 ${SOURCE} 在 openwrt-package 不存在"
+  exit 1
+fi
+
 cat >>"feeds.conf.default" <<-EOF
-src-git langge1 https://github.com/shidahuilang/openwrt-package.git;${SOURCE}
+src-git langge1 https://github.com/shidahuilang/openwrt-package.git ;${SOURCE}
 src-git helloworld https://github.com/fw876/helloworld.git
-src-git passwall3 https://github.com/xiaorouji/openwrt-passwall-packages;main
+src-git passwall3 https://github.com/xiaorouji/openwrt-passwall-packages.git ;main
 EOF
+
+# 4. 更新 feed 并强制检测目录
 ./scripts/feeds update -a
 
-if [[ -f "${HOME_PATH}/feeds/luci/modules/luci-mod-system/root/usr/share/luci/menu.d/luci-mod-system.json" ]]; then
-  echo "src-git langge2 https://github.com/shidahuilang/openwrt-package.git;Theme2" >> "feeds.conf.default"
+for feed in langge1 helloworld passwall3; do
+  [[ -d "feeds/$feed" ]] || {
+    echo "::error::feeds/$feed 目录未生成，请检查分支名或网络"
+    exit 1
+  }
+done
+
+# 5. 动态追加 langge2（Theme 分支）
+if [[ -f "feeds/luci/modules/luci-mod-system/root/usr/share/luci/menu.d/luci-mod-system.json" ]]; then
+  theme_branch="Theme2"
 else
-  echo "src-git langge2 https://github.com/shidahuilang/openwrt-package.git;Theme1" >> "feeds.conf.default"
+  theme_branch="Theme1"
 fi
+echo "src-git langge2 https://github.com/shidahuilang/openwrt-package.git ;${theme_branch}" >> feeds.conf.default
+./scripts/feeds update langge2
+[[ -d "feeds/langge2" ]] || { echo "::error::langge2 目录未生成"; exit 1; }
+
+# 6. 删除冲突插件（保留 langge* / helloworld / passwall3 / freifunk）
 z="*luci-theme-argon*,*luci-app-argon-config*,*luci-theme-Butterfly*,*luci-theme-netgear*,*luci-theme-atmaterial*, \
 luci-theme-rosy,luci-theme-darkmatter,luci-theme-infinityfreedom,luci-theme-design,luci-app-design-config, \
 luci-theme-bootstrap-mod,luci-theme-freifunk-generic,luci-theme-opentomato,luci-theme-kucat, \
@@ -306,9 +328,12 @@ luci-app-eqos,adguardhome,luci-app-adguardhome,mosdns,luci-app-mosdns,luci-app-w
 luci-app-gost,gost,luci-app-smartdns,smartdns,luci-app-wizard,luci-app-msd_lite,msd_lite, \
 luci-app-ssr-plus,*luci-app-passwall*,luci-app-vssr,lua-maxminddb,v2dat,v2ray-geodata"
 t=(${z//,/ })
-for x in ${t[@]}; do \
-  find . -type d -name "${x}" |grep -v 'langge\|freifunk\|helloworld\|passwall3' |xargs -i rm -rf {}; \
+for x in ${t[@]}; do
+  find . -type d -name "${x}" \
+    | grep -vE '(langge|freifunk|helloworld|passwall3)' \
+    | xargs -r -i rm -rf {}
 done
+}
 
 case "${SOURCE_CODE}" in
 COOLSNOWWOLF)
