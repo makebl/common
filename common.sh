@@ -730,7 +730,29 @@ if [[ "${REPO_BRANCH}" =~ (openwrt-18.06|openwrt-18.06-k5.4) ]]; then
   fi
 fi
 }
-
+function Diy_ORTALWRT() {
+cd ${HOME_PATH}
+if [[ "${REPO_BRANCH}" =~ (main|owrt) ]]; then
+  if [[ -d "${HOME_PATH}/build/common/Share/v2raya" ]]; then
+    rm -rf ${HOME_PATH}/feeds/helloworld/v2raya
+    cp -Rf ${HOME_PATH}/build/common/Share/v2raya ${HOME_PATH}/feeds/helloworld/v2raya
+  fi
+  # 降低shadowsocks-rust版本,最新版本编译不成功
+  #if [[ -d "${HOME_PATH}/feeds/passwall3/shadowsocks-rust" ]]; then
+    #curl -o ${HOME_PATH}/feeds/passwall3/shadowsocks-rust/Makefile https://raw.githubusercontent.com/shidahuilang/common/main/Share/shadowsocks-rust/Makefile
+ # fi
+fi
+if [[ "${REPO_BRANCH}" =~ (openwrt-18.06|openwrt-18.06-k5.4) ]]; then
+  # 升级node版本
+  rm -rf ${HOME_PATH}/feeds/packages/lang/node
+  git clone https://github.com/sbwml/feeds_packages_lang_node-prebuilt -b packages-22.03 ${HOME_PATH}/feeds/packages/lang/node
+  # 增加缺少的bmx6
+  if [[ -d "${HOME_PATH}/build/common/Share/bmx6" ]]; then
+    rm -rf ${HOME_PATH}/feeds/routing/bmx6
+    cp -Rf ${HOME_PATH}/build/common/Share/bmx6 ${HOME_PATH}/feeds/routing/bmx6
+  fi
+fi
+}
 
 function Diy_XWRT() {
 cd ${HOME_PATH}
