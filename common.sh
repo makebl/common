@@ -140,6 +140,13 @@ IMMORTALWRT)
   export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
   export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
 ;;
+ORTALWRT)
+  export REPO_URL="https://github.com/VIKINGYFY/immortalwrt"
+  export SOURCE="ortalwrt"
+  export SOURCE_OWNER="VIKINGYFY's"
+  export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
+  export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
+;;
 XWRT)
   export REPO_URL="https://github.com/x-wrt/x-wrt"
   export SOURCE="Xwrt"
