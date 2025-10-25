@@ -5,6 +5,11 @@
 
 ACTIONS_VERSION="1.0.3"
 
+# 为本地/非 Actions 环境提供回退，确保 GITHUB_WORKSPACE 存在
+if [ -z "${GITHUB_WORKSPACE}" ]; then
+  export GITHUB_WORKSPACE="$(pwd)"
+fi
+
 function TIME() {
 Compte=$(date +%Y年%m月%d号%H时%M分)
   [[ -z "$1" ]] && {
@@ -167,9 +172,20 @@ OFFICIAL)
 ;;
 esac
 
+# ORTALWRT 分支：保持用户选择，不强制切换
+# 如果 main 分支缺少顶层 Makefile，会在后续自动检测并调整 HOME_PATH
+
 export DIY_PART_SH="diy-part.sh"
 echo "DIY_PART_SH=${DIY_PART_SH}" >> ${GITHUB_ENV}
 echo "HOME_PATH=${GITHUB_WORKSPACE}/openwrt" >> ${GITHUB_ENV}
+# 自动检测并修正 HOME_PATH：如顶层缺少 Makefile，尝试寻找包含 OpenWrt 规则的 Makefile
+if [[ ! -f "${GITHUB_WORKSPACE}/openwrt/Makefile" ]]; then
+  alt_path=$(find "${GITHUB_WORKSPACE}/openwrt" -maxdepth 2 -type f -name Makefile -exec grep -l 'include \$(TOPDIR)/rules.mk' {} \; | head -n1)
+  if [[ -n "${alt_path}" ]]; then
+    alt_dir=$(dirname "${alt_path}")
+    echo "HOME_PATH=${alt_dir}" >> ${GITHUB_ENV}
+  fi
+fi
 echo "SOURCE_CODE=${SOURCE_CODE}" >> ${GITHUB_ENV}
 echo "REPO_URL=${REPO_URL}" >> ${GITHUB_ENV}
 echo "REPO_BRANCH=${REPO_BRANCH}" >> ${GITHUB_ENV}
